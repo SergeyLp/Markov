@@ -7,7 +7,15 @@ const int  MAXGEN = 5000; // maximum words generated
 
 typedef deque<string> Prefix;
 
-unordered_map<deque<string>, vector<string> > statetab; // prefix -> suffixes
+size_t prefixHash(const Prefix & prefix) {
+    size_t hash_ = 0;
+    for (const auto item : prefix) {
+        hash_ ^= hash<string>()(item);
+    }
+    return hash_;
+}
+
+unordered_map<Prefix, vector<string>, decltype(&prefixHash) > statetab(10013, prefixHash); // prefix -> suffixes
 //map<Prefix, vector<string> > statetab; // prefix -> suffixes
 
 void		build(Prefix&, istream&);
