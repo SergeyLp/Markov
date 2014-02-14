@@ -1,9 +1,36 @@
 #include "stdafx.h"
 using namespace std;
 
-const int  NPREF = 2;
-const char NONWORD[] = "\n";	// cannot appear as real line: we remove newlines
-const int  MAXGEN = 1500; // maximum words generated
+const int  wordsInPrefix = 2;
+const char nonWord[] = "\n";	// cannot appear as real line: we remove newlines
+const int  maxGeneratedWords = 1500;
+
+class PrefixWords{
+public:
+    PrefixWords(){};
+    ~PrefixWords(){};
+
+private:
+
+};
+
+class Suffix{
+public:
+    Suffix(){};
+    ~Suffix(){};
+
+    void push_back(const string &s){
+        wordList.push_back(s);
+    }
+
+    const vector <string>& content()const{
+        return wordList;
+    }
+
+private:
+    vector<string> wordList;
+
+};
 
 typedef deque<string> Prefix;
 
@@ -15,16 +42,16 @@ size_t prefixHash(const Prefix & prefix) {
     return hash_;
 }
 
-unordered_map<Prefix, vector<string>, decltype(&prefixHash) > statetab(1013, prefixHash); // prefix -> suffixes
-//map<Prefix, vector<string> > statetab; // prefix -> suffixes
+//unordered_map<Prefix, vector<string>, decltype(&prefixHash) > statetab(1013, prefixHash); // prefix -> suffixes
+unordered_map<Prefix, Suffix, decltype(&prefixHash) > tabPrefixToSuffixes(1013, prefixHash);
 
-void		build(Prefix&, istream&);
+void		readAndBuild(Prefix&, istream&);
 void		generate();
-void		add(Prefix&, const string&);
+void		addWordToSuffixUpdatePrefix(Prefix&, const string&);
 
 void initPrefix(Prefix &prefix){
-    for (int i = 0; i < NPREF; i++)
-        add(prefix, NONWORD);
+    for (int i = 0; i < wordsInPrefix; i++)
+        addWordToSuffixUpdatePrefix(prefix, nonWord);
 }
 
 
@@ -55,47 +82,68 @@ int main(int argc, char* argv[]) {
 
     bench_timer.start( );
     cout << "\nBuild ...";
-    build(prefix, input_file_stream);
+    readAndBuild(prefix, input_file_stream);
     bench_timer.stop();
 
-    add(prefix, NONWORD);
+    addWordToSuffixUpdatePrefix(prefix, nonWord);
     generate();
-    statetab.clear( );
+    tabPrefixToSuffixes.clear();
+    //statetab.clear();
     cout << "\n\b\b\b\t" << format(bench_timer.elapsed( )) << "";
     getchar();
 
     return 0;
 }
 
-// build: read input words, build state table
-void build(Prefix& prefix, istream& in) {
+void readAndBuild(Prefix& prefix, istream& in) {
     string buf;
 
     while (in >> buf)
-        add(prefix, buf);
+        addWordToSuffixUpdatePrefix(prefix, buf);
 }
 
 // add: add word to suffix deque, update prefix
-void add(Prefix& prefix, const string& s) {
-    if (prefix.size() == NPREF) {
-        statetab[prefix].push_back(s);
-        prefix.pop_front( );
+void addWordToSuffixUpdatePrefix(Prefix& prefix, const string& s) {
+    if (prefix.size() == wordsInPrefix) {
+        //statetab[prefix].push_back(s);
+        tabPrefixToSuffixes[prefix].push_back(s);
+        prefix.pop_front();
     }
     prefix.push_back(s);
 }
 
-// generate: produce output, one word per line
 void generate() {
+    for (const auto &it: tabPrefixToSuffixes){
+        const auto suffixesList = it.second.content();
+        if (suffixesList.size() < 2)
+            continue;
+
+        const auto &prefixWords = it.first;
+        cout << '\n' << prefixWords.at(0) << " " << prefixWords.at(1) << "\n";
+        for (const auto &suffixWord : suffixesList){
+            cout << "\t" << suffixWord << "\n";
+        }
+    }
+
+#if 0
+    typedef std::multimap<int, string> word_index;
+    word_index words_by_freq;
+    for (const auto &state : statetab) {
+        //words_by_freq.insert(std::pair<int, string>(state.second., state.first));
+    }
+#endif
+
+#if 0
     Prefix prefix;
     initPrefix(prefix);
-
-    for (int i = 0; i < MAXGEN; i++) {
+    for (int i = 0; i < maxGeneratedWords; i++) {
         const auto &suf = statetab.at(prefix);
         const auto &w = suf.at(rand()% suf.size());
-        if (w == NONWORD)
+        if (w == nonWord)
             break;
         cout << w << " ";
         prefix.pop_front();	// advance
         prefix.push_back(w);
     }
+#endif
 }
