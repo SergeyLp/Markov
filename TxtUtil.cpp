@@ -6,6 +6,8 @@ using std::string;
 
 const int  wordsInPrefix = 1;
 const char nonWord[] = "{!}";	// cannot appear as real line
+const char separatorSentence[] = "{!}";
+
 const int  maxGeneratedWords = 1500;
 
 class PrefixWords{
@@ -81,7 +83,7 @@ void readAndBuild(Prefix& prefix, std::ifstream &inputFile) {
             boost::algorithm::to_lower(buf);
             add(prefix, buf);
         }
-        add(prefix, "{/P}");
+        //add(prefix, "{/P}");
     }
 }
 
@@ -89,6 +91,10 @@ int main(int argc, char* argv[]) {
     std::locale::global(std::locale(""));
     setlocale(LC_ALL, "Russian");
 
+
+
+
+#if 0
     std::string s = "Владимир Высоцкий";
     std::cout << boost::algorithm::erase_first_copy(s, "и") << std::endl; 
     std::cout << boost::algorithm::erase_nth_copy(s, "и", 2) << std::endl; 
@@ -96,9 +102,9 @@ int main(int argc, char* argv[]) {
     std::cout << boost::algorithm::erase_all_copy(s, "и") << std::endl; 
     std::cout << boost::algorithm::erase_head_copy(s, 5) << std::endl; 
     std::cout << boost::algorithm::erase_tail_copy(s, 8) << std::endl;
-    //getchar();
-    //return 0;
-
+    getchar();
+    return 0;
+#endif
 #if 0
     ::testing::InitGoogleTest(&argc, argv);
     const int res = RUN_ALL_TESTS( );
@@ -157,7 +163,6 @@ void generate() {
 
         const auto &prefixWords = tablePair.first;
         for (const auto &prefixWord : prefixWords){
-            //if (prefixWord == )
             std::cout << prefixWord << ' ';
         }
         std::cout << "\n ";
